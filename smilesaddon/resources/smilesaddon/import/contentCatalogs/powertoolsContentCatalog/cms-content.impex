@@ -1,0 +1,75 @@
+# -----------------------------------------------------------------------
+# [y] hybris Platform
+#
+# Copyright (c) 2017 SAP SE or an SAP affiliate company.  All rights reserved.
+#
+# This software is the confidential and proprietary information of SAP
+# ("Confidential Information"). You shall not disclose such Confidential
+# Information and shall use it only in accordance with the terms of the
+# license agreement you entered into with SAP.
+# -----------------------------------------------------------------------
+$contentCatalog=powertoolsContentCatalog
+$contentCV=catalogVersion(CatalogVersion.catalog(Catalog.id[default=$contentCatalog]),CatalogVersion.version[default=Online])[default=$contentCatalog:Online]
+#$jarResourceCms=jar:de.hybris.platform.commerceorgaddon.constants.CommerceorgaddonConstants&/commerceorgaddon/import/cockpits/cmscockpit
+
+
+
+#################    DASHBOARD START    #################
+
+
+#### add my-company related cms items for responsive ####
+
+# create cms link components for my-company pages
+INSERT_UPDATE CMSLinkComponent ; $contentCV[unique=true] ; uid[unique=true]      ; name                     ; url                                                    ; &linkRef              ; target(code)[default='sameWindow']
+                               ;                         ; OrdersLink            ; Customers Orders Link    ; /DashBoard/orders/manage-orders/                       ; OrdersLink            ;                                   
+
+                               ;                         ; PromotionsLink        ; Promotions Link          ; /DashBoard/promotions/manage-promotions/               ; PromotionsLink        ;                                   
+
+                               ;                         ; PriceAndInventoryLink ; Price And Inventory Link ; /DashBoard/PriceAndInventory/manage-priceAndInventory/ ; PriceAndInventoryLink ;                                   
+
+                               ;                         ; CustomersLink         ; Customers Link           ; /DashBoard/Customers/manage-customers/                 ; CustomersLink         ;                                   
+
+
+# create navigation root node for my-company & child nodes for the root node
+INSERT_UPDATE CMSNavigationNode ; uid[unique=true]         ; $contentCV[unique=true] ; name              ; parent(uid, $contentCV) ; links(&linkRef) ; &nodeRef                
+                                ; DashBoardNavNode         ;                         ; DashBoard         ; PowertoolsNavNode       ;                 ; DashBoardNavNode        
+# children for my-company       
+                                ; OrdersNavNode            ;                         ; Orders            ; DashBoardNavNode        ;                 ; OrdersNavNode           
+                                ; PromotionsNavNode        ;                         ; Promotions        ; DashBoardNavNode        ;                 ; PromotionsNavNode       
+                                ; PriceAndInventoryNavNode ;                         ; PriceAndInventory ; DashBoardNavNode        ;                 ; PriceAndInventoryNavNode
+                                ; CustomersNavNode         ;                         ; Customers         ; DashBoardNavNode        ;                 ; CustomersNavNode        
+
+# create cms navigation entry for navigation child nodes
+INSERT_UPDATE CMSNavigationEntry ; uid[unique=true]              ; $contentCV[unique=true] ; name                             ; navigationNode(&nodeRef) ; item(&linkRef)        ;  
+                                 ; OrdersNavNodeEntry            ;                         ; Orders Nav Node Entry            ; OrdersNavNode            ; OrdersLink            ;  
+                                 ; PromotionsNavNodeEntry        ;                         ; Promotions Nav Node Entry        ; PromotionsNavNode        ; PromotionsLink        ;  
+                                 ; PriceAndInventoryNavNodeEntry ;                         ; PriceAndInventory Nav Node Entry ; PriceAndInventoryNavNode ; PriceAndInventoryLink ;  
+                                 ; CustomersNavNodeEntry         ;                         ; Customers Nav Node Entry         ; CustomersNavNode         ; CustomersLink         ;  
+
+# create navigation component for my-company
+INSERT_UPDATE NavigationComponent ; $contentCV[unique=true] ; uid[unique=true]   ; name      ; styleClass          ; &componentRef      ; navigationNode(&nodeRef)
+                                  ;                         ; DashBoardComponent ; DashBoard ; companyNavComponent ; DashBoardComponent ; DashBoardNavNode        
+#create a distributorgroup        
+INSERT_UPDATE UserGroup ; UID[unique=true] ; groups[ignorenull=false,default= ] ; locname[lang=en]     ; description
+                        ; distributorgroup ;                                    ; " distributor group" ;            
+
+#### add appropriate restrictions ####
+
+# CMS User Group Restrictions     
+INSERT_UPDATE CMSUserGroupRestriction ; $contentCV[unique=true] ; uid[unique=true]                     ; name                                ; userGroups(uid)  ; includeSubgroups ; components(&componentRef)
+                                      ;                         ; DashBoardDistributorGroupRestriction ; distributor Link  Group Restriction ; distributorgroup ; true             ; DashBoardComponent       
+
+#### add my-company stuff here ####   
+
+# add my account navigation component to a content slot
+INSERT_UPDATE ContentSlot ; $contentCV[unique=true] ; uid[unique=true] ; cmsComponents(uid,$contentCV)[mode=append]
+                          ;                         ; HeaderLinksSlot  ; DashBoardComponent                        
+
+UPDATE ContentSlot ; $contentCV[unique=true] ; uid[unique=true] ; cmsComponents(&componentRef) ;  
+
+INSERT_UPDATE JspIncludeComponent ; $contentCV[unique=true] ; uid[unique=true] ; name ; page ; actions(uid,$contentCV) ; &componentRef
+
+
+UPDATE SyncAttributeDescriptorConfig[batchmode=true] ; includedInSync ; attributeDescriptor(qualifier, enclosingType(code))[unique=true]
+                                                     ; false          ; navigationNodeList:AbstractPage                                 
+#################   DASHBOARD END    #################

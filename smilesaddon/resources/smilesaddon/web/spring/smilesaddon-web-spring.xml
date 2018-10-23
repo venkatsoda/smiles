@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ [y] hybris Platform
+
+ Copyright (c) 2017 SAP SE or an SAP affiliate company.  All rights reserved.
+
+ This software is the confidential and proprietary information of SAP
+ ("Confidential Information"). You shall not disclose such Confidential
+ Information and shall use it only in accordance with the terms of the
+ license agreement you entered into with SAP.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd">
+           
+    <context:annotation-config/> 
+
+	<context:component-scan base-package="com.smiles.controllers"/> 
+	<!-- Expose /acceleratoraddon/web/webroot/WEB-INF/messages/base.js.properties  resource bundle as javascript variables -->
+	<bean id="defaultSmilesaddonJavaScriptMessageResourceAccessor" parent="abstractJavaScriptMessageResourceAccessor">
+		<property name="addOnName" value="smilesaddon"/>
+	</bean>
+
+	<bean id="defaultSmilesaddonBeforeViewJsPropsHandlerAdaptee" parent="abstractBeforeViewJsPropsHandlerAdaptee" class="de.hybris.platform.addonsupport.interceptors.ExportJsPropertiesBeforeViewHandler">
+		<property name="messageSource" ref="defaultSmilesaddonJavaScriptMessageResourceAccessor"/>
+	</bean>
+
+	<bean id="getSmilesaddonBeforeViewHandler" parent="beforeViewHandlerAdapter">
+		<property name="adaptee">
+			<ref bean="defaultSmilesaddonBeforeViewJsPropsHandlerAdaptee"/>
+		</property>
+	</bean>
+	<bean id="SmilesaddonBeforeViewHandlerListMergeDirective" depends-on="beforeViewHandlersList" parent="listMergeDirective">
+		<property name="add" ref="getSmilesaddonBeforeViewHandler"/>
+	</bean>
+	
+		
+	<alias alias="dashboardOrderFacade" name="dashboardOrderFacade" />
+	<bean id="dashboardOrderFacade"
+		class="com.smiles.facades.order.impl.DashboardOrderFacadeImpl">
+		<property name="dashboardOrderService" ref="dashboardOrderService"/>
+		<property name="orderConverter" ref="orderConverter"/>
+		 <property name="productService" ref="productService"/>
+		  <property name="catalogVersionService" ref="catalogVersionService" />
+		  <property name="productConverter" ref="productConverter"/>
+		  <property name="productConfiguredPopulator" ref="productConfiguredPopulator"/>
+	</bean>
+	
+	<alias alias="dashboardCustomerFacade" name="dashboardCustomerFacade" />
+	<bean id="dashboardCustomerFacade"
+		class="com.smiles.facades.customer.impl.DashboardCustomerFacadeImpl">
+		<property name="dashboardCustomerService" ref="dashboardCustomerService"></property>
+	</bean>
+	
+	
+	
+	<alias alias="dashboardOrderService" name="dashboardOrderService" />
+	<bean id="dashboardOrderService"
+		class="com.smiles.service.order.impl.DashboardOrderServiceImpl">
+		<property name="dashboardOrderDao" ref="dashboardOrderDao"></property>
+	</bean>
+	
+	<alias alias="dashboardCustomerService" name="dashboardCustomerService" />
+	<bean id="dashboardCustomerService"
+		class="com.smiles.service.customer.impl.DashboardCustomerServiceImpl">
+			<property name="dashboardCustomerDao" ref="dashboardCustomerDao"></property>
+	</bean>
+	
+	
+	
+	<alias alias="dashboardOrderDao" name="dashboardOrderDao" />
+	<bean id="dashboardOrderDao"
+		class="com.smiles.dao.order.impl.DashboardOrderDaoImpl">
+		<property name="userService" ref="userService"/>
+		<property name="flexibleSearchService" ref="flexibleSearchService"/>
+	</bean>
+	
+	<alias alias="dashboardCustomerDao" name="dashboardCustomerDao" />
+	<bean id="dashboardCustomerDao"
+		class="com.smiles.dao.customer.impl.DashboardCustomerDaoImpl">
+		<property name="userService" ref="userService"/>
+		<property name="flexibleSearchService" ref="flexibleSearchService"/>
+	</bean>
+</beans>
