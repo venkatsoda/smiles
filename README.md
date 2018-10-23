@@ -1,2 +1,2 @@
 # smiles
-team smiles
+team smiles to create the addon
