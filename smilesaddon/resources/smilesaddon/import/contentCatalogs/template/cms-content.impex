@@ -1,20 +1,67 @@
-# -----------------------------------------------------------------------
-# [y] hybris Platform
-#
-# Copyright (c) 2017 SAP SE or an SAP affiliate company.  All rights reserved.
-#
-# This software is the confidential and proprietary information of SAP
-# ("Confidential Information"). You shall not disclose such Confidential
-# Information and shall use it only in accordance with the terms of the
-# license agreement you entered into with SAP.
-# -----------------------------------------------------------------------
-######
-## PARAMETERS REQUIRED FOR THIS SCRIPT
-##
-##   * contentCatalog   - content catalog id
-##   * addonExtensionName - extension name of the ui addon
-#######
 
-$contentCV=catalogVersion(CatalogVersion.catalog(Catalog.id[default=$contentCatalog]),CatalogVersion.version[default=Staged])[default=$contentCatalog:Staged]
+$contentCatalog=powertoolsContentCatalog
+$contentCV=catalogVersion(CatalogVersion.catalog(Catalog.id[default=$contentCatalog]),CatalogVersion.version[default=Online])[default=$contentCatalog:Online]
 $jarResourceCmsCockpit=jar:com.smiles.constants.SmilesaddonConstants&/smilesaddon/import/cockpit/cmscockpit
+#$contentCV=catalogVersion(CatalogVersion.catalog(Catalog.id[default=$contentCatalog]),CatalogVersion.version[default=Staged])[default=$contentCatalog:Staged]
+
+# Import modulegen config properties into impex macros
+UPDATE GenericItem[processor=de.hybris.platform.commerceservices.impex.impl.ConfigPropertyImportProcessor] ; pk[unique=true]
+$jarResourceCms=$config-jarResourceCmsValue                                                                
+
+# Create PageTemplates                                                                                     
+# These define the layout for pages                                                                        
+# "FrontendTemplateName" is used to define the JSP that should be used to render the page for pages with multiple possible layouts.
+# "RestrictedPageTypes" is used to restrict templates to page types                                        
+INSERT_UPDATE PageTemplate ; $contentCV[unique=true] ; uid[unique=true]      ; name                    ; frontendTemplateName      ; restrictedPageTypes(code) ; active[default=true]
+                           ;                         ; DashBoardPageTemplate ; DashBoard Page Template ; account/accountLayoutPage ; ContentPage               ; false               ;  
+
+# Add Velocity templates that are in the CMS Cockpit. These give a better layout for editing pages
+# The FileLoaderValueTranslator loads a File into a String property. The templates could also be inserted in-line in this file.
+UPDATE PageTemplate ; $contentCV[unique=true] ; uid[unique=true]      ; velocityTemplate[translator=de.hybris.platform.commerceservices.impex.impl.FileLoaderValueTranslator]
+                    ;                         ; DashBoardPageTemplate ; $jarResourceCms/structure-view/structure_accountPageTemplate.vm                                      
+
+
+# Company Page Template
+# Template used for all of the Company pages
+INSERT_UPDATE ContentSlotName ; name[unique=true] ; template(uid,$contentCV)[unique=true][default='DashBoardPageTemplate'] ; validComponentTypes(code) ; compTypeGroup(code)
+                              ; SiteLogo          ;                                                                        ;                           ; logo               
+                              ; HeaderLinks       ;                                                                        ;                           ; headerlinks        
+                              ; SearchBox         ;                                                                        ;                           ; searchbox          
+                              ; MiniCart          ;                                                                        ;                           ; minicart           
+                              ; NavigationBar     ;                                                                        ;                           ; navigation         
+                              ; TopContent        ;                                                                        ;                           ; wide               
+                              ; SideContent       ;                                                                        ;                           ; narrow             
+                              ; BodyContent       ;                                                                        ;                           ; wide               
+                              ; BottomContent     ;                                                                        ;                           ; wide               
+                              ; Footer            ;                                                                        ;                           ; footer             
+                              ; TopHeaderSlot     ;                                                                        ;                           ; wide               
+                              ; BottomHeaderSlot  ;                                                                        ;                           ; wide               
+
+
+INSERT_UPDATE ContentSlotForTemplate ; $contentCV[unique=true] ; uid[unique=true]               ; position[unique=true] ; pageTemplate(uid,$contentCV)[unique=true][default='DashBoardPageTemplate'] ; contentSlot(uid,$contentCV)[unique=true] ; allowOverwrite
+                                     ;                         ; SiteLogo-DashBoardPage         ; SiteLogo              ;                                                                            ; SiteLogoSlot                             ; true          
+                                     ;                         ; HomepageLink-DashBoardPage     ; HomepageNavLink       ;                                                                            ; HomepageNavLinkSlot                      ; true          
+                                     ;                         ; HeaderLinks-DashBoardPage      ; HeaderLinks           ;                                                                            ; HeaderLinksSlot                          ; true          
+                                     ;                         ; SearchBox-DashBoardPage        ; SearchBox             ;                                                                            ; SearchBoxSlot                            ; true          
+                                     ;                         ; NavigationBar-DashBoardPage    ; NavigationBar         ;                                                                            ; NavigationBarSlot                        ; true          
+                                     ;                         ; MiniCart-DashBoardPage         ; MiniCart              ;                                                                            ; MiniCartSlot                             ; true          
+                                     ;                         ; Footer-DashBoardPage           ; Footer                ;                                                                            ; FooterSlot                               ; true          
+                                     ;                         ; TopHeaderSlot-DashBoardPage    ; TopHeaderSlot         ;                                                                            ; TopHeaderSlot                            ; true          
+                                     ;                         ; BottomHeaderSlot-DashBoardPage ; BottomHeaderSlot      ;                                                                            ; BottomHeaderSlot                         ; true          
+
+
+# Functional Content Pages           
+INSERT_UPDATE ContentPage ; $contentCV[unique=true] ; uid[unique=true] ; name            ; masterTemplate(uid,$contentCV) ; label    ; defaultPage[default='true'] ; approvalStatus(code)[default='approved'] ; homepage[default='false'] ; previewImage(code, $contentCV)[default='ContentPageModel__function_preview']
+#                          ;                         ; my-company-login       ; My Company Login Page        ; LoginPageTemplate              ; my-company-login      
+                          ;                         ; dashboard        ; DashBoard  Page ; DashBoardPageTemplate          ; dashboard
+#                          ;                         ; organizationManagement ; Organization Management Page ; DashBoardPageTemplate          ; organizationManagement
+#                          ;                         ; manageUnits            ; Manage Units Page            ; DashBoardPageTemplate          ; manageUnits           
+#                          ;                         ; manageUsergroups       ; Manage Usergroup Page        ; DashBoardPageTemplate          ; manageUsergroups      
+#                          ;                         ; manageUnitApprovers    ; Manage Units Approvers Page  ; DashBoardPageTemplate          ; manageUnitApprovers   
+
+
+# Preview Image for use in the CMS Cockpit for special ContentPages
+INSERT_UPDATE Media ; $contentCV[unique=true] ; code[unique=true]                  ; mime     ; realfilename                           ; @media[translator=de.hybris.platform.impex.jalo.media.MediaDataTranslator][forceWrite=true]
+                    ;                         ; ContentPageModel__function_preview ; text/gif ; ContentPageModel__function_preview.gif ; $jarResourceCms/preview-images/ContentPageModel__function_preview.gif                      
+
 

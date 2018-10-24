@@ -41,7 +41,7 @@ import com.smiles.facades.order.DashboardOrderFacade;
 @RequestMapping("/DashBoard")
 public class DashboardPageController extends AbstractSearchPageController
 {
-	private static final String ORDER_HISTORY_CMS_PAGE = "orders";
+	private static final String DASHBOARD_CMS_PAGE = "dashboard";
 
 	private static final String BREADCRUMBS_ATTR = "breadcrumbs";
 
@@ -106,8 +106,8 @@ public class DashboardPageController extends AbstractSearchPageController
 		//	model.addAttribute("orderHistoryList", getRecentOrders(populateModelStoreName(orderHistoryList)));
 		model.addAttribute("orderHistoryList", orderHistoryList);
 		//model.addAttribute("dashboardOrderForm", new DashboardOrderForm());
-		storeCmsPageInModel(model, getContentPageForLabelOrId(ORDER_HISTORY_CMS_PAGE));
-		setUpMetaDataForContentPage(model, getContentPageForLabelOrId(ORDER_HISTORY_CMS_PAGE));
+		storeCmsPageInModel(model, getContentPageForLabelOrId(DASHBOARD_CMS_PAGE));
+		setUpMetaDataForContentPage(model, getContentPageForLabelOrId(DASHBOARD_CMS_PAGE));
 		model.addAttribute(BREADCRUMBS_ATTR, accountBreadcrumbBuilder.getBreadcrumbs("text.account.orderHistory"));
 		model.addAttribute(ThirdPartyConstants.SeoRobots.META_ROBOTS, ThirdPartyConstants.SeoRobots.NOINDEX_NOFOLLOW);
 		return ControllerConstants.Views.Pages.DashBoard.distributorAllOrdersPage;

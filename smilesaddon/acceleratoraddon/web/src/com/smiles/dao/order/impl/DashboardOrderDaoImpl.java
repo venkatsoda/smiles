@@ -117,7 +117,11 @@ public class DashboardOrderDaoImpl implements DashboardOrderDao
 	{
 		final B2BCustomerModel existingCustomer = dashboardCustomerDao.getB2BCustomerByUid(currentUserId);
 		final FlexibleSearchQuery query = new FlexibleSearchQuery(new String(
-				"SELECT {PK} from {Order} where {distributor}=?distributor and {versionID} IS NULL Order By {creationtime} DESC"));
+				/*
+				 * "SELECT {PK} from {Order} where {distributor}=?distributor and {versionID} IS NULL Order By {creationtime} DESC"
+				 * ));
+				 */
+				"SELECT {PK} from {Order} where  {versionID} IS NULL Order By {creationtime} DESC"));
 		query.addQueryParameter("distributor", existingCustomer.getPk());
 		final UserModel currentUser = userService.getCurrentUser();
 		userService.setCurrentUser(userService.getAdminUser());
