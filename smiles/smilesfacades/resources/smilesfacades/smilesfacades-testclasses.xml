@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testclasses><smilesfacades><testclass>com.smiles.facades.suggestion.DefaultSimpleSuggestionFacadeIntegrationTest</testclass><testclass>com.smiles.facades.suggestion.impl.DefaultSimpleSuggestionFacadeTest</testclass></smilesfacades></testclasses>
